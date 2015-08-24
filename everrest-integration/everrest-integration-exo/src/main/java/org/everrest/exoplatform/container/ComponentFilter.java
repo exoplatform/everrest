@@ -18,7 +18,7 @@
  */
 package org.everrest.exoplatform.container;
 
-import org.picocontainer.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapter;
 
 /**
  * Implementation of this interface may be used to hide some components of RestfulContainer.

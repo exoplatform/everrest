@@ -24,7 +24,7 @@ import org.everrest.core.ResponseFilter;
 import org.everrest.core.method.MethodInvokerFilter;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
-import org.picocontainer.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapter;
 import org.picocontainer.Startable;
 
 import javax.ws.rs.Path;
@@ -83,29 +83,29 @@ public final class StartableApplication extends Application implements Startable
                 Class clazz = componentAdapter.getComponentImplementation();
                 if (clazz.getAnnotation(Provider.class) != null) {
                     if (ContextResolver.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                     if (ExceptionMapper.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                     if (MessageBodyReader.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                     if (MessageBodyWriter.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                 } else if (clazz.getAnnotation(Filter.class) != null) {
                     if (MethodInvokerFilter.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                     if (RequestFilter.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                     if (ResponseFilter.class.isAssignableFrom(clazz)) {
-                        singletons.add(componentAdapter.getComponentInstance(container));
+                        singletons.add(componentAdapter.getComponentInstance());
                     }
                 } else if (clazz.getAnnotation(Path.class) != null) {
-                    singletons.add(componentAdapter.getComponentInstance(container));
+                    singletons.add(componentAdapter.getComponentInstance());
                 }
             }
         }

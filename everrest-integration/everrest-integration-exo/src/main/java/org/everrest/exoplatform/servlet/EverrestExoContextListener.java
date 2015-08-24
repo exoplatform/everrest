@@ -44,7 +44,7 @@ import org.everrest.core.util.Logger;
 import org.everrest.exoplatform.ExoDependencySupplier;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.StandaloneContainer;
-import org.picocontainer.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -207,23 +207,23 @@ public abstract class EverrestExoContextListener implements ServletContextListen
                             providers.addContextResolver(new SingletonObjectFactory<ProviderDescriptor>(pDescriptor,
                                                                                                         componentAdapter
                                                                                                                 .getComponentInstance(
-                                                                                                                        container)));
+                                                                                                                        )));
                         }
                         if (ExceptionMapper.class.isAssignableFrom(clazz)) {
                             providers.addExceptionMapper(new SingletonObjectFactory<ProviderDescriptor>(pDescriptor, componentAdapter
-                                    .getComponentInstance(container)));
+                                    .getComponentInstance()));
                         }
                         if (MessageBodyReader.class.isAssignableFrom(clazz)) {
                             providers.addMessageBodyReader(new SingletonObjectFactory<ProviderDescriptor>(pDescriptor,
                                                                                                           componentAdapter
                                                                                                                   .getComponentInstance(
-                                                                                                                          container)));
+                                                                                                                          )));
                         }
                         if (MessageBodyWriter.class.isAssignableFrom(clazz)) {
                             providers.addMessageBodyWriter(new SingletonObjectFactory<ProviderDescriptor>(pDescriptor,
                                                                                                           componentAdapter
                                                                                                                   .getComponentInstance(
-                                                                                                                          container)));
+                                                                                                                          )));
                         }
                     } else if (clazz.isAnnotationPresent(Filter.class)) {
                         FilterDescriptorImpl fDescriptor = new FilterDescriptorImpl(clazz, lifeCycle);
@@ -233,22 +233,22 @@ public abstract class EverrestExoContextListener implements ServletContextListen
                             providers.addMethodInvokerFilter(new SingletonObjectFactory<FilterDescriptor>(fDescriptor,
                                                                                                           componentAdapter
                                                                                                                   .getComponentInstance(
-                                                                                                                          container)));
+                                                                                                                          )));
                         }
                         if (RequestFilter.class.isAssignableFrom(clazz)) {
                             providers.addRequestFilter(new SingletonObjectFactory<FilterDescriptor>(fDescriptor, componentAdapter
-                                    .getComponentInstance(container)));
+                                    .getComponentInstance()));
                         }
                         if (ResponseFilter.class.isAssignableFrom(clazz)) {
                             providers.addResponseFilter(new SingletonObjectFactory<FilterDescriptor>(fDescriptor, componentAdapter
-                                    .getComponentInstance(container)));
+                                    .getComponentInstance()));
                         }
                     } else if (clazz.isAnnotationPresent(Path.class)) {
                         AbstractResourceDescriptor rDescriptor = new AbstractResourceDescriptorImpl(clazz, lifeCycle);
                         rDescriptor.accept(rdv);
 
                         resources.addResource(new SingletonObjectFactory<AbstractResourceDescriptor>(rDescriptor, componentAdapter
-                                .getComponentInstance(container)));
+                                .getComponentInstance()));
                     }
                 }
             }

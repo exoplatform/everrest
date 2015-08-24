@@ -70,7 +70,8 @@ public class RegisterComponentTest extends StandaloneBaseTest {
         ApplicationContextImpl.setCurrent(new ApplicationContextImpl(request, response, null));
         // Add dependencies to different containers to be sure both are resolvable.
         container.registerComponentInstance(new ConstructorDependency());
-        restfulContainer.registerComponentInstance(new InjectDependency());
+        InjectDependency instance= new InjectDependency();
+        restfulContainer.registerComponentInstance(instance.getClass() , instance);
 
         restToComponentAdaptersField = restfulContainer.getClass().getDeclaredField("restToComponentAdapters");
         restToComponentAdaptersField.setAccessible(true);
@@ -102,7 +103,7 @@ public class RegisterComponentTest extends StandaloneBaseTest {
 
     public void testCreateProvider() throws Exception {
         restfulContainer.registerComponentImplementation("A", A.class);
-        A a = (A)restfulContainer.getComponentInstance("A");
+        A a = (A)restfulContainer.getComponentInstance("A", A.class, false);
         assertNotNull(a);
         assertNotNull(a.h);
         assertNotNull(a.u);
@@ -114,7 +115,7 @@ public class RegisterComponentTest extends StandaloneBaseTest {
 
     public void testCreateResource() throws Exception {
         restfulContainer.registerComponentImplementation("X", X.class);
-        X x = (X)restfulContainer.getComponentInstance("X");
+        X x = (X)restfulContainer.getComponentInstance("X", X.class, false);
         assertNotNull(x);
         assertNotNull(x.h);
         assertNotNull(x.u);

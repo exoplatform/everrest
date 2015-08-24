@@ -21,24 +21,12 @@ package org.everrest.exoplatform.container;
 import org.everrest.core.Filter;
 import org.everrest.core.impl.header.MediaTypeHelper;
 import org.everrest.core.uri.UriPattern;
-import org.exoplatform.container.ConcurrentPicoContainer;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoRegistrationException;
-import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.DefaultComponentAdapterFactory;
-import org.picocontainer.defaults.DuplicateComponentKeyRegistrationException;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
+import org.exoplatform.container.ConcurrentContainer;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapterFactory;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -52,6 +40,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.Providers;
 
 /**
  * Container intended for decoupling third part code and everrest framework. Components and adapters are searchable by
@@ -98,7 +96,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * information into a class field or constructor parameters with annotation {@link javax.ws.rs.core.Context}.
  * <p>
  * <span style="font-weight: bold">NOTE</span> Methods <code>registerXXX</code> of this container may throws
- * {@link PicoRegistrationException} if component violates the restrictions of framework, e.g. if resource with the
+ * {@link ContainerException} if component violates the restrictions of framework, e.g. if resource with the
  * same
  * URI pattern or provider with the same purpose already registered in this container.
  * </p>
@@ -112,22 +110,23 @@ import java.util.concurrent.locks.ReentrantLock;
  * @see ExceptionMapper
  */
 @SuppressWarnings("serial")
-public class RestfulContainer extends ConcurrentPicoContainer implements Providers {
-    public RestfulContainer() {
-        this(new DefaultComponentAdapterFactory(), null);
-    }
+public class RestfulContainer extends ConcurrentContainer implements Providers {
 
-    protected RestfulContainer(PicoContainer parent) {
-        this(new DefaultComponentAdapterFactory(), parent);
-    }
+   private ComponentAdapterFactory componentAdapterFactory;
 
-    protected RestfulContainer(ComponentAdapterFactory factory, PicoContainer parent) {
-        super(wrapComponentAdapterFactory(factory), parent);
-    }
+   public RestfulContainer() {
+   }
 
-    private static ComponentAdapterFactory wrapComponentAdapterFactory(ComponentAdapterFactory componentAdapterFactory) {
-        return new RestfulComponentAdapterFactory(componentAdapterFactory);
-    }
+   protected RestfulContainer(ExoContainer holder) {
+      super(holder.getParent(),holder);
+      setHolder(holder);
+   }
+
+   public void setHolder(ExoContainer holder)
+   {
+      this.holder = holder;
+      this.componentAdapterFactory = new RestfulComponentAdapterFactory(this, getDefaultComponentAdapterFactory());
+   }
 
     private volatile Map<Key, ComponentAdapter> restToComponentAdapters = new HashMap<Key, ComponentAdapter>();
     private final    Lock                       lock                    = new ReentrantLock();
@@ -256,10 +255,18 @@ public class RestfulContainer extends ConcurrentPicoContainer implements Provide
         return Collections.emptyList();
     }
 
-    /** @see org.exoplatform.container.ConcurrentPicoContainer#registerComponent(org.picocontainer.ComponentAdapter) */
-    @Override
+   public <T> ComponentAdapter<T> registerComponentImplementation(Object componentKey, Class<T> componentImplementation)
+      throws ContainerException
+   {
+
+      ComponentAdapter<T> componentAdapter =
+         componentAdapterFactory.createComponentAdapter(componentKey, componentImplementation);
+      registerComponent(componentAdapter);
+      return componentAdapter;
+   }
+
     public ComponentAdapter registerComponent(ComponentAdapter componentAdapter)
-            throws DuplicateComponentKeyRegistrationException {
+            throws ContainerException {
         if (componentAdapter instanceof RestfulComponentAdapter) {
             List<Key> keys = makeKeys((RestfulComponentAdapter)componentAdapter);
             if (keys.size() > 0) {
@@ -269,7 +276,7 @@ public class RestfulContainer extends ConcurrentPicoContainer implements Provide
                     for (Key key : keys) {
                         ComponentAdapter previous = copy.put(key, componentAdapter);
                         if (previous != null) {
-                            throw new PicoRegistrationException("Cannot register component " + componentAdapter
+                            throw new ContainerException("Cannot register component " + componentAdapter
                                                                 + " because already registered component " + previous);
                         }
                     }
@@ -284,22 +291,16 @@ public class RestfulContainer extends ConcurrentPicoContainer implements Provide
         return super.registerComponent(componentAdapter);
     }
 
-    /**
-     * @see org.exoplatform.container.ConcurrentPicoContainer#registerComponentInstance(java.lang.Object,
-     *      java.lang.Object)
-     */
     @Override
-    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance)
-            throws PicoRegistrationException {
+    public ComponentAdapter registerComponentInstance(Object componentKey, Object componentInstance){
         if (RestfulComponentAdapter.isRestfulComponent(componentInstance)) {
-            ComponentAdapter componentAdapter = new RestfulComponentAdapter(componentKey, componentInstance);
+            ComponentAdapter componentAdapter = new RestfulComponentAdapter(this,componentKey, componentInstance);
             registerComponent(componentAdapter);
             return componentAdapter;
         }
         return super.registerComponentInstance(componentKey, componentInstance);
     }
 
-    /** @see org.exoplatform.container.ConcurrentPicoContainer#unregisterComponent(java.lang.Object) */
     @Override
     public ComponentAdapter unregisterComponent(Object componentKey) {
         ComponentAdapter componentAdapter = super.unregisterComponent(componentKey);
@@ -332,7 +333,7 @@ public class RestfulContainer extends ConcurrentPicoContainer implements Provide
      */
     @SuppressWarnings("unchecked")
     public List<ComponentAdapter> getComponentAdapters(Class<? extends Annotation> annotation) {
-        Collection<ComponentAdapter> adapters = getComponentAdapters();
+        Collection<ComponentAdapter<?>> adapters = getComponentAdapters();
         if (adapters.size() > 0) {
             List<ComponentAdapter> result = new ArrayList<ComponentAdapter>();
             for (ComponentAdapter a : adapters) {
@@ -402,7 +403,7 @@ public class RestfulContainer extends ConcurrentPicoContainer implements Provide
      * @return a collection of components
      */
     public List<Object> getComponents(Class<? extends Annotation> annotation) {
-        List<?> instances = getComponentInstances();
+        List<?> instances = super.getComponentInstancesOfType(Object.class);
         if (instances.size() > 0) {
             List<Object> result = new ArrayList<Object>();
             for (Object o : instances) {

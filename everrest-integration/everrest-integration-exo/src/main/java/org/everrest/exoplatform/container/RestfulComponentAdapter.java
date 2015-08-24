@@ -31,11 +31,10 @@ import org.everrest.core.impl.ApplicationContextImpl;
 import org.everrest.core.impl.FilterDescriptorImpl;
 import org.everrest.core.impl.provider.ProviderDescriptorImpl;
 import org.everrest.core.impl.resource.AbstractResourceDescriptorImpl;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.PicoInitializationException;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.PicoVisitor;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerException;
+
 
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.ContextResolver;
@@ -67,6 +66,7 @@ public class RestfulComponentAdapter implements ComponentAdapter {
     private final Object                     componentKey;
     private final ObjectFactory<ObjectModel> factory;
     private final ParameterizedType[]        implementedInterfaces;
+    private final RestfulContainer container;
 
     /**
      * Create new RestfulComponentAdapter for specified componentKey and class or instance.
@@ -81,12 +81,13 @@ public class RestfulComponentAdapter implements ComponentAdapter {
      *         if <code>classOrInstance</code> has neither {@link Path}, {@link Provider} nor
      *         {@link Filter}.
      */
-    public RestfulComponentAdapter(Object componentKey, Object classOrInstance) {
+    public RestfulComponentAdapter(RestfulContainer container, Object componentKey, Object classOrInstance) {
         if (componentKey == null || classOrInstance == null) {
             throw new NullPointerException();
         }
 
         this.componentKey = componentKey;
+        this.container = container;
 
         ComponentLifecycleScope lifecycle;
         if (classOrInstance instanceof Class) {
@@ -128,10 +129,9 @@ public class RestfulComponentAdapter implements ComponentAdapter {
         return implementedInterfaces;
     }
 
-    /** @see org.picocontainer.ComponentAdapter#getComponentInstance(org.picocontainer.PicoContainer) */
     @Override
-    public Object getComponentInstance(final PicoContainer container) throws PicoInitializationException,
-                                                                             PicoIntrospectionException {
+    public Object getComponentInstance() throws ContainerException
+    {
         // ComponentAdapter always create instance of component by using ObjectFactory instance.
         // PicoContainer (version 1.x) can't provide all required dependencies.
         // ComponentAdapter in this case is just facade for ObjectFactory.
@@ -143,7 +143,7 @@ public class RestfulComponentAdapter implements ComponentAdapter {
         try {
             context.setDependencySupplier(new BaseDependencySupplier() {
                 public Object getComponent(Class<?> type) {
-                    Object object = container.getComponentInstanceOfType(type);
+                    Object object = container.getComponentInstanceOfType(type, true);
                     if (object != null) {
                         return object;
                     }
@@ -160,30 +160,23 @@ public class RestfulComponentAdapter implements ComponentAdapter {
         }
     }
 
-    /** @see org.picocontainer.ComponentAdapter#verify(org.picocontainer.PicoContainer) */
-    @Override
-    public void verify(PicoContainer container) throws PicoIntrospectionException {
-    }
-
-    /** @see org.picocontainer.ComponentAdapter#accept(org.picocontainer.PicoVisitor) */
-    @Override
-    public void accept(PicoVisitor visitor) {
-        visitor.visitComponentAdapter(this);
-    }
-
-    /** @see org.picocontainer.ComponentAdapter#getComponentKey() */
     @Override
     public Object getComponentKey() {
         return componentKey;
     }
 
-    /** @see org.picocontainer.ComponentAdapter#getComponentImplementation() */
     @Override
     public Class getComponentImplementation() {
         return clazz;
     }
 
-    @Override
+   @Override
+   public boolean isSingleton()
+   {
+      return true;
+   }
+
+   @Override
     public String toString() {
         return "RestfulComponentAdapter [" + getComponentKey() + "]";
     }

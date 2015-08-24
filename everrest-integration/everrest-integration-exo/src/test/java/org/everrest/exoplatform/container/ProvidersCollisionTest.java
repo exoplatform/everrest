@@ -19,6 +19,7 @@
 package org.everrest.exoplatform.container;
 
 import org.everrest.exoplatform.StandaloneBaseTest;
+import org.exoplatform.container.spi.ContainerException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -64,36 +65,36 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         // And it has not any annotation for restriction media types such as:
         // javax.ws.rs.Consumes and javax.ws.rs.Produces so any other implementation of
         // JAX-RS extension interfaces should not be allowed to add in container.
-        restfulContainer.registerComponentImplementation(A.class);
+        restfulContainer.registerComponentImplementation(A.class, A.class);
         try {
-            restfulContainer.registerComponentImplementation(B.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(B.class,B.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
-            restfulContainer.registerComponentImplementation(C.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(C.class,B.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
-            restfulContainer.registerComponentImplementation(D.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(D.class, D.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
-            restfulContainer.registerComponentImplementation(E.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(E.class, E.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
-            restfulContainer.registerComponentImplementation(F.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(F.class, F.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
-            restfulContainer.registerComponentImplementation(G.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(G.class, G.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
@@ -114,18 +115,18 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         restfulContainer.unregisterComponent("G");
         try {
             restfulContainer.registerComponentImplementation("A", A.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("B", B.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("C", C.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
@@ -144,23 +145,23 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         restfulContainer.unregisterComponent("G");
         try {
             restfulContainer.registerComponentImplementation("A", A.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("B", B.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("C", C.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("E", E.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
@@ -179,23 +180,23 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         restfulContainer.unregisterComponent("D");
         try {
             restfulContainer.registerComponentImplementation("F", F.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("E", E.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("B", B.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("A", A.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
@@ -216,18 +217,18 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         restfulContainer.unregisterComponent("D");
         try {
             restfulContainer.registerComponentImplementation("F", F.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("E", E.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
         try {
             restfulContainer.registerComponentImplementation("A", A.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
@@ -235,17 +236,17 @@ public class ProvidersCollisionTest extends StandaloneBaseTest {
         restfulContainer.registerComponentImplementation("H", H.class);
         try {
             restfulContainer.registerComponentImplementation("H", H.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 
     public void testRegisterExtended() throws Exception {
-        restfulContainer.registerComponentImplementation(H.class);
+        restfulContainer.registerComponentImplementation(H.class, H.class);
         try {
-            restfulContainer.registerComponentImplementation(ExtH.class);
-            fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+            restfulContainer.registerComponentImplementation(ExtH.class, ExtH.class);
+            fail("ContainerException must be thrown. ");
+        } catch (ContainerException e) {
         }
     }
 

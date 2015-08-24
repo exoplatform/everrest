@@ -19,6 +19,7 @@
 package org.everrest.exoplatform.container;
 
 import org.everrest.exoplatform.StandaloneBaseTest;
+import org.exoplatform.container.spi.ContainerException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -48,7 +49,7 @@ public class ResourcesCollisionTest extends StandaloneBaseTest {
         try {
             restfulContainer.registerComponentImplementation("X", X.class);
             fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+        } catch (ContainerException e) {
         }
     }
 
@@ -57,7 +58,7 @@ public class ResourcesCollisionTest extends StandaloneBaseTest {
         try {
             restfulContainer.registerComponentImplementation("Y", Y.class);
             fail("PicoRegistrationException must be thrown. ");
-        } catch (org.picocontainer.PicoRegistrationException e) {
+        } catch (ContainerException e) {
         }
     }
 

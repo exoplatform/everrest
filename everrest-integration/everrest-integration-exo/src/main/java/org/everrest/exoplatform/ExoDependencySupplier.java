@@ -21,7 +21,7 @@ package org.everrest.exoplatform;
 import org.everrest.core.BaseDependencySupplier;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
-import org.picocontainer.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapter;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -69,7 +69,7 @@ public class ExoDependencySupplier extends BaseDependencySupplier {
                 return new javax.inject.Provider<Object>() {
                     @Override
                     public Object get() {
-                        return componentAdapter.getComponentInstance(container);
+                        return componentAdapter.getComponentInstance();
                     }
                 };
             }

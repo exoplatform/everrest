@@ -18,12 +18,9 @@
  */
 package org.everrest.exoplatform.container;
 
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoIntrospectionException;
-import org.picocontainer.defaults.AssignabilityRegistrationException;
-import org.picocontainer.defaults.ComponentAdapterFactory;
-import org.picocontainer.defaults.NotConcreteRegistrationException;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.ContainerException;
+import org.exoplatform.container.spi.ComponentAdapterFactory;
 
 /**
  * @author <a href="andrew00x@gmail.com">Andrey Parfonov</a>
@@ -31,27 +28,23 @@ import org.picocontainer.defaults.NotConcreteRegistrationException;
  */
 public final class RestfulComponentAdapterFactory implements ComponentAdapterFactory {
     private final ComponentAdapterFactory delegate;
+    private final  RestfulContainer container;
 
-    public RestfulComponentAdapterFactory(ComponentAdapterFactory delegate) {
+    public RestfulComponentAdapterFactory(RestfulContainer container,ComponentAdapterFactory delegate) {
         if (delegate == null) {
             throw new NullPointerException();
         }
         this.delegate = delegate;
+        this.container = container;
     }
 
-    /**
-     * @see org.picocontainer.defaults.ComponentAdapterFactory#createComponentAdapter(java.lang.Object, java.lang.Class,
-     *      org.picocontainer.Parameter[])
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public ComponentAdapter createComponentAdapter(Object componentKey, Class componentImplementation,
-                                                   Parameter[] parameters)
-            throws PicoIntrospectionException, AssignabilityRegistrationException,
-                   NotConcreteRegistrationException {
-        if (RestfulComponentAdapter.isRestfulComponent(componentImplementation)) {
-            return new RestfulComponentAdapter(componentKey, componentImplementation);
-        }
-        return delegate.createComponentAdapter(componentKey, componentImplementation, parameters);
-    }
+   @SuppressWarnings("rawtypes")
+   @Override
+   public <T> ComponentAdapter<T> createComponentAdapter(Object componentKey, Class<T> componentImplementation) throws ContainerException
+   {
+      if (RestfulComponentAdapter.isRestfulComponent(componentImplementation)) {
+         return new RestfulComponentAdapter(container,componentKey, componentImplementation);
+      }
+      return delegate.createComponentAdapter(componentKey, componentImplementation);
+   }
 }

@@ -19,7 +19,7 @@
 package org.everrest.exoplatform.container;
 
 import org.everrest.exoplatform.StandaloneBaseTest;
-import org.picocontainer.ComponentAdapter;
+import org.exoplatform.container.spi.ComponentAdapter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,10 +47,10 @@ public class RestfulContainerTest extends StandaloneBaseTest {
     }
 
     public void testFindComponentAdaptersByAnnotation() throws Exception {
-        restfulContainer.registerComponentImplementation(A.class);
-        restfulContainer.registerComponentImplementation(B.class);
-        restfulContainer.registerComponentImplementation(C.class);
-        restfulContainer.registerComponentImplementation(D.class);
+        restfulContainer.registerComponentImplementation(A.class, A.class);
+        restfulContainer.registerComponentImplementation(B.class, B.class);
+        restfulContainer.registerComponentImplementation(C.class, C.class);
+        restfulContainer.registerComponentImplementation(D.class, D.class);
         List<ComponentAdapter> adapters = restfulContainer.getComponentAdapters(MyAnnotation.class);
         assertEquals(3, adapters.size());
         List<Class<?>> l = new ArrayList<Class<?>>(3);
@@ -63,10 +63,10 @@ public class RestfulContainerTest extends StandaloneBaseTest {
     }
 
     public void testFindComponentAdaptersByTypeAndAnnotation() throws Exception {
-        restfulContainer.registerComponentImplementation(A.class);
-        restfulContainer.registerComponentImplementation(B.class);
-        restfulContainer.registerComponentImplementation(C.class);
-        restfulContainer.registerComponentImplementation(D.class);
+        restfulContainer.registerComponentImplementation(A.class, A.class);
+        restfulContainer.registerComponentImplementation(B.class, B.class);
+        restfulContainer.registerComponentImplementation(C.class, C.class);
+        restfulContainer.registerComponentImplementation(D.class, D.class);
         List<ComponentAdapter> adapters = restfulContainer.getComponentAdaptersOfType(I.class, MyAnnotation.class);
         assertEquals(2, adapters.size());
         List<Class<?>> l = new ArrayList<Class<?>>(2);

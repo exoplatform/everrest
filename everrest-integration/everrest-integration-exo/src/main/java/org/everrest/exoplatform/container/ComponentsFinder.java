@@ -22,10 +22,10 @@ import org.everrest.core.impl.header.MediaTypeHelper;
 import org.everrest.core.provider.ProviderDescriptor;
 import org.everrest.core.resource.AbstractResourceDescriptor;
 import org.everrest.core.uri.UriPattern;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.defaults.AbstractPicoVisitor;
+import org.exoplatform.container.spi.ComponentAdapter;
+import org.exoplatform.container.spi.Container;
+import org.exoplatform.container.spi.ContainerVisitor;
+
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
@@ -52,7 +52,8 @@ import java.util.Set;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
-abstract class ComponentsFinder extends AbstractPicoVisitor {
+abstract class ComponentsFinder implements ContainerVisitor
+{
     private static final Set<ComponentFilter> COMPONENT_FILTERS = new LinkedHashSet<ComponentFilter>();
 
     static {
@@ -82,18 +83,6 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
         this.annotation = annotation;
     }
 
-    /** @see org.picocontainer.PicoVisitor#visitComponentAdapter(org.picocontainer.ComponentAdapter) */
-    @Override
-    public final void visitComponentAdapter(ComponentAdapter componentAdapter) {
-        checkTraversal();
-    }
-
-    /** @see org.picocontainer.PicoVisitor#visitParameter(org.picocontainer.Parameter) */
-    @Override
-    public final void visitParameter(Parameter parameter) {
-        checkTraversal();
-    }
-
     final static class ResourceFinder extends ComponentsFinder {
         private final String       requestPath;
         private final List<String> parameterValues;
@@ -105,12 +94,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             this.parameterValues = parameterValues;
         }
 
-        /** @see org.picocontainer.PicoVisitor#traverse(java.lang.Object) */
-        @Override
-        public Object traverse(Object container) {
+        public Object traverse(Container container) {
             components.clear();
             try {
-                super.traverse(container);
+                visitContainer(container);
                 Map<UriPattern, ComponentAdapter> matched = new HashMap<UriPattern, ComponentAdapter>();
                 for (ComponentAdapter adapter : components) {
                     if (adapter instanceof RestfulComponentAdapter) {
@@ -144,13 +131,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             }
         }
 
-        /** @see org.picocontainer.PicoVisitor#visitContainer(org.picocontainer.PicoContainer) */
-        @Override
-        public void visitContainer(PicoContainer pico) {
-            checkTraversal();
+        public void visitContainer(Container container) {
             components.addAll(
                     withFilters(
-                            ((RestfulContainer)pico).getComponentAdapters(annotation)
+                       ((RestfulContainer)container).getComponentAdapters(annotation)
                                )
                              );
         }
@@ -172,13 +156,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             this.mediaType = mediaType;
         }
 
-        /** @see org.picocontainer.defaults.AbstractPicoVisitor#traverse(java.lang.Object) */
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        @Override
-        public Object traverse(Object container) {
+        public Object traverse(Container container) {
             components.clear();
             try {
-                super.traverse(container);
+                visitContainer(container);
                 MediaTypeHelper.MediaTypeRange mediaTypeRange = new MediaTypeHelper.MediaTypeRange(mediaType);
                 while (mediaTypeRange.hasNext()) {
                     MediaType next = mediaTypeRange.next();
@@ -188,7 +169,7 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
                                     (ProviderDescriptor)((RestfulComponentAdapter)adapter).getObjectModel();
                             if (provider.produces().contains(next)) {
                                 MessageBodyWriter writer =
-                                        (MessageBodyWriter)adapter.getComponentInstance((PicoContainer)container);
+                                        (MessageBodyWriter)adapter.getComponentInstance();
                                 if (writer.isWriteable(entityType, genericEntityType, annotations, next)) {
                                     return writer;
                                 }
@@ -202,13 +183,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             }
         }
 
-        /** @see org.picocontainer.PicoVisitor#visitContainer(org.picocontainer.PicoContainer) */
-        @Override
-        public void visitContainer(PicoContainer pico) {
-            checkTraversal();
+        public void visitContainer(Container container) {
             components.addAll(
                     withFilters(
-                            ((RestfulContainer)pico).getComponentAdaptersOfType(MessageBodyWriter.class, annotation)
+                            ((RestfulContainer)container).getComponentAdaptersOfType(MessageBodyWriter.class, annotation)
                                )
                              );
         }
@@ -230,13 +208,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             this.mediaType = mediaType;
         }
 
-        /** @see org.picocontainer.defaults.AbstractPicoVisitor#traverse(java.lang.Object) */
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        @Override
-        public Object traverse(Object container) {
+        public Object traverse(Container container) {
             components.clear();
             try {
-                super.traverse(container);
+                visitContainer(container);
                 MediaTypeHelper.MediaTypeRange mediaTypeRange = new MediaTypeHelper.MediaTypeRange(mediaType);
                 while (mediaTypeRange.hasNext()) {
                     MediaType next = mediaTypeRange.next();
@@ -246,7 +221,7 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
                                     (ProviderDescriptor)((RestfulComponentAdapter)adapter).getObjectModel();
                             if (provider.consumes().contains(next)) {
                                 MessageBodyReader reader =
-                                        (MessageBodyReader)adapter.getComponentInstance((PicoContainer)container);
+                                        (MessageBodyReader)adapter.getComponentInstance();
                                 if (reader.isReadable(entityType, genericEntityType, annotations, next)) {
                                     return reader;
                                 }
@@ -260,13 +235,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             }
         }
 
-        /** @see org.picocontainer.PicoVisitor#visitContainer(org.picocontainer.PicoContainer) */
-        @Override
-        public void visitContainer(PicoContainer pico) {
-            checkTraversal();
+        public void visitContainer(Container container) {
             components.addAll(
                     withFilters(
-                            ((RestfulContainer)pico).getComponentAdaptersOfType(MessageBodyReader.class, annotation)
+                            ((RestfulContainer)container).getComponentAdaptersOfType(MessageBodyReader.class, annotation)
                                )
                              );
         }
@@ -281,12 +253,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             this.exceptionType = exceptionType;
         }
 
-        /** @see org.picocontainer.defaults.AbstractPicoVisitor#traverse(java.lang.Object) */
-        @Override
-        public Object traverse(Object container) {
+        public Object traverse(Container container) {
             components.clear();
             try {
-                super.traverse(container);
+               visitContainer(container);
                 for (ComponentAdapter adapter : components) {
                     if (adapter instanceof RestfulComponentAdapter) {
                         ParameterizedType[] implementedInterfaces =
@@ -295,7 +265,7 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
                             ParameterizedType genericInterface = implementedInterfaces[i];
                             if (ExceptionMapper.class == genericInterface.getRawType()
                                 && exceptionType == genericInterface.getActualTypeArguments()[0]) {
-                                return adapter.getComponentInstance((PicoContainer)container);
+                                return adapter.getComponentInstance();
                             }
                         }
                     }
@@ -306,13 +276,11 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             }
         }
 
-        /** @see org.picocontainer.PicoVisitor#visitContainer(org.picocontainer.PicoContainer) */
-        @Override
-        public void visitContainer(PicoContainer pico) {
-            checkTraversal();
+        public void visitContainer(Container container) {
+
             components.addAll(
                     withFilters(
-                            ((RestfulContainer)pico).getComponentAdaptersOfType(ExceptionMapper.class, annotation)
+                            ((RestfulContainer)container).getComponentAdaptersOfType(ExceptionMapper.class, annotation)
                                )
                              );
         }
@@ -329,12 +297,10 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             this.mediaType = mediaType;
         }
 
-        /** @see org.picocontainer.defaults.AbstractPicoVisitor#traverse(java.lang.Object) */
-        @Override
-        public Object traverse(Object container) {
+        public Object traverse(Container container) {
             components.clear();
             try {
-                super.traverse(container);
+                visitContainer(container);
                 MediaTypeHelper.MediaTypeRange mediaTypeRange = new MediaTypeHelper.MediaTypeRange(mediaType);
                 while (mediaTypeRange.hasNext()) {
                     MediaType next = mediaTypeRange.next();
@@ -355,7 +321,7 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
                                         continue;
                                     }
                                     if (ContextResolver.class == rawType && contextType.isAssignableFrom(actualType)) {
-                                        return adapter.getComponentInstance((PicoContainer)container);
+                                        return adapter.getComponentInstance();
                                     }
                                 }
                             }
@@ -368,43 +334,40 @@ abstract class ComponentsFinder extends AbstractPicoVisitor {
             }
         }
 
-        /** @see org.picocontainer.PicoVisitor#visitContainer(org.picocontainer.PicoContainer) */
-        @Override
-        public void visitContainer(PicoContainer pico) {
-            checkTraversal();
+        public void visitContainer(Container container) {
             components.addAll(
                     withFilters(
-                            ((RestfulContainer)pico).getComponentAdaptersOfType(ContextResolver.class, annotation)
+                            ((RestfulContainer)container).getComponentAdaptersOfType(ContextResolver.class, annotation)
                                )
                              );
         }
     }
 
-    static ComponentAdapter findResource(PicoContainer pico, String requestPath, List<String> parameterValues) {
-        return (ComponentAdapter)new ResourceFinder(Path.class, requestPath, parameterValues).traverse(pico);
+    static ComponentAdapter findResource(Container container, String requestPath, List<String> parameterValues) {
+        return (ComponentAdapter)new ResourceFinder(Path.class, requestPath, parameterValues).traverse(container);
     }
 
     @SuppressWarnings("unchecked")
-    static <T> MessageBodyWriter<T> findWriter(PicoContainer pico, Class<T> entityType, Type genericEntityType,
+    static <T> MessageBodyWriter<T> findWriter(Container container, Class<T> entityType, Type genericEntityType,
                                                Annotation[] annotations, MediaType mediaType) {
         return (MessageBodyWriter<T>)new WriterFinder<T>(Provider.class, entityType, genericEntityType, annotations,
-                                                         mediaType).traverse(pico);
+                                                         mediaType).traverse(container);
     }
 
     @SuppressWarnings("unchecked")
-    static <T> MessageBodyReader<T> findReader(PicoContainer pico, Class<T> entityType, Type genericEntityType,
+    static <T> MessageBodyReader<T> findReader(Container container, Class<T> entityType, Type genericEntityType,
                                                Annotation[] annotations, MediaType mediaType) {
         return (MessageBodyReader<T>)new ReaderFinder<T>(Provider.class, entityType, genericEntityType, annotations,
-                                                         mediaType).traverse(pico);
+                                                         mediaType).traverse(container);
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends Throwable> ExceptionMapper<T> findExceptionMapper(PicoContainer pico, Class<T> exceptionType) {
-        return (ExceptionMapper<T>)new ExceptionMapperFinder<T>(Provider.class, exceptionType).traverse(pico);
+    static <T extends Throwable> ExceptionMapper<T> findExceptionMapper(Container container, Class<T> exceptionType) {
+        return (ExceptionMapper<T>)new ExceptionMapperFinder<T>(Provider.class, exceptionType).traverse(container);
     }
 
     @SuppressWarnings("unchecked")
-    static <T> ContextResolver<T> findContextResolver(PicoContainer pico, Class<T> contextType, MediaType mediaType) {
-        return (ContextResolver<T>)new ContextResolverFinder<T>(Provider.class, contextType, mediaType).traverse(pico);
+    static <T> ContextResolver<T> findContextResolver(Container container, Class<T> contextType, MediaType mediaType) {
+        return (ContextResolver<T>)new ContextResolverFinder<T>(Provider.class, contextType, mediaType).traverse(container);
     }
 }

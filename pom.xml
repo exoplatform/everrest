@@ -61,10 +61,11 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://code.google.com/p/everrest/</connection>
-        <developerConnection>scm:git:https://code.google.com/p/everrest/</developerConnection>
-        <url>http://code.google.com/p/everrest/source/browse/</url>
-    </scm>
+      <connection>scm:git:git://github.com/exoplatform/everrest.git</connection>
+      <developerConnection>scm:git:git@github.com:exoplatform/everrest.git</developerConnection>
+      <url>https://fisheye.exoplatform.org/browse/everrest-dev</url>
+   </scm>
+
 
     <distributionManagement>
         <repository>

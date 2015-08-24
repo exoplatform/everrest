@@ -32,6 +32,10 @@
     <artifactId>everrest-groovy</artifactId>
 
     <name>eXo EverRest :: Groovy</name>
+    <properties>
+        <argLine>-Djava.security.manager=default -Djava.security.policy=${project.build.directory}/test-classes/test.policy
+            -Djava.security.debug=denied</argLine>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -72,15 +76,6 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>-Djava.security.manager=default -Djava.security.policy=${project.build.directory}/test-classes/test.policy
-                        -Djava.security.debug=denied
-                    </argLine>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>

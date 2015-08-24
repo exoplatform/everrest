@@ -104,7 +104,7 @@
 
         <!-- Maven plugin versions -->
         <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
-        <version.release.plugin>2.2.1</version.release.plugin>
+        <version.release.plugin>2.5.1</version.release.plugin>
 
         <!-- Repositories URLs -->
         <everrest.releases.repo.url>http://repository.exoplatform.org/service/local/staging/deploy/maven2/</everrest.releases.repo.url>

@@ -27,7 +27,7 @@
     <groupId>org.everrest</groupId>
     <artifactId>everrest-parent</artifactId>
     <name>EverRest :: Parent</name>
-    <version>1.1.x-eXo-SNAPSHOT</version>
+    <version>1.1.1-eXo</version>
     <packaging>pom</packaging>
 
     <description>everREST is a project which provides a way to build RESTful applications using own complete implementation of JAX-RS
@@ -64,7 +64,7 @@
       <connection>scm:git:git://github.com/exoplatform/everrest.git</connection>
       <developerConnection>scm:git:git@github.com:exoplatform/everrest.git</developerConnection>
       <url>https://fisheye.exoplatform.org/browse/everrest-dev</url>
-     <tag>HEAD</tag>
+     <tag>1.1.1-eXo</tag>
   </scm>
 
 
